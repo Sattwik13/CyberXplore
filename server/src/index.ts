@@ -13,6 +13,7 @@ const app = express();
 app.use(cors());
 app.use('/uploads', express.static('uploads'));
 
+// DB connection
 mongoose.connect(process.env.MONGO_URI!).then(() => console.log('MongoDB connected'));
 
 const storage = multer.diskStorage({
@@ -32,7 +33,9 @@ const upload = multer({
 
 // POST /upload
 app.post('/upload', upload.single('file'), async (req, res) => {
+
   if (!req.file) return res.status(400).send('No file');
+
   const fileDoc = await FileMeta.create({
     filename: req.file.originalname,
     path: req.file.path,
@@ -41,6 +44,7 @@ app.post('/upload', upload.single('file'), async (req, res) => {
     scannedAt: null,
     result: null,
   });
+
   await scanQueue.add('scan', { fileId: fileDoc._id, filePath: req.file.path });
   res.json(fileDoc);
 });
@@ -50,11 +54,11 @@ app.get('/files', async (req, res) => {
   
   const filter: any = {};
   if (req.query.result) filter.result = req.query.result;
-  
+
   const files = await FileMeta.find().sort({ uploadedAt: -1 });
   res.json(files);
 });
 
-// Server
+// Server port
 const port = process.env.PORT || 5000;
 app.listen(port, () => console.log(`Server up on port ${port}`));
