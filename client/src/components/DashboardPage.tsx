@@ -27,17 +27,21 @@ export default function DashboardPage({ refreshKey }: { refreshKey: number }) {
   const [currentPage, setCurrentPage] = useState(1); 
   const itemsPerPage = 10; // Number of items to show per page
 
-  // Ref to keep track of files on previous fetch
+  //-- Ref to keep track of files on previous fetch
   const previousFilesRef = useRef<Record<string, FileItem>>({});
+
+  
   useEffect(() => {
-    // Fetch files async function
+    //---  Fetch files async function
     async function loadFiles() {
-      const res = await fetchFiles();
+      const res = await fetchFiles(); //--- API call to fetch file data
       const newFiles = res.data;
 
       // Show toast for newly scanned files that were previously pending
       newFiles.forEach((file: FileItem) => {
-        const prevFile = previousFilesRef.current[file._id];
+        const prevFile = previousFilesRef.current[file._id]; //--- Look up previous version of this file
+
+        //--- If the file existed before and was previously pending, but is now scanned
         if (
           prevFile &&
           prevFile.status === 'pending' &&
